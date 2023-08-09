@@ -5,6 +5,7 @@ import com.momo.steps.cache.StepCache;
 import com.momo.steps.cache.WeeklyStep;
 import com.momo.steps.constant.StatisticType;
 import com.momo.steps.document.DailyStepDocument;
+import com.momo.steps.document.WeeklyStepDocument;
 import com.momo.steps.repository.StepRepository;
 import com.momo.steps.response.StepResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -73,8 +74,10 @@ public class StepServiceImpl implements StepService {
 					LocalDate.now(),
 					StatisticType.WEEKLY
 			);
+		} else {
+			WeeklyStepDocument weeklySteps = this.stepRepository.getWeeklySteps(username, LocalDate.now());
+			return StepResponse.of(weeklySteps.getUsername(), weeklySteps.getTotalSteps(), weeklySteps.getLastUpdated(), weeklySteps.getWeekStartDate(), StatisticType.WEEKLY);
 		}
-		return StepResponse.empty(username, StatisticType.WEEKLY);
 	}
 
 	@Override

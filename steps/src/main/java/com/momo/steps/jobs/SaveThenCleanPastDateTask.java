@@ -46,7 +46,7 @@ public class SaveThenCleanPastDateTask {
 							.build();
 					stepRepository.saveWeeklySteps(weeklySteps.getUsername(), weeklySteps.getTotalSteps(), weeklySteps.getWeekStartDate());
 				} else {
-					stepRepository.saveWeeklySteps(dailyStep.username(), dailyStep.totalSteps(), yesterday);
+					stepRepository.saveWeeklySteps(dailyStep.username(), dailyStep.totalSteps(), wsd);
 				}
 			}
 			DateKey ofToday = DateKey.ofToday();
