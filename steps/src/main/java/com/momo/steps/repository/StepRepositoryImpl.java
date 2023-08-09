@@ -19,30 +19,32 @@ import java.util.UUID;
 @AllArgsConstructor
 public class StepRepositoryImpl implements StepRepository {
 	private final MongoTemplate mongoTemplate;
+	private static final String DAILY_COLLECTION = "daily_steps";
+	private static final String WEEKLY_COLLECTION = "weekly_steps";
 	@Override
 	public List<DailyStepDocument> getDailySteps(LocalDate date) {
 		Query query = new Query(Criteria.where("date").is(date));
-		return mongoTemplate.find(query, DailyStepDocument.class);
+		return mongoTemplate.find(query, DailyStepDocument.class, DAILY_COLLECTION);
 	}
 
 	@Override
 	public DailyStepDocument getDailySteps(String username, LocalDate date) {
 		Query query = new Query(Criteria.where("username").is(username).and("date").is(date));
-		return mongoTemplate.findOne(query, DailyStepDocument.class);
+		return mongoTemplate.findOne(query, DailyStepDocument.class, DAILY_COLLECTION);
 	}
 
 	@Override
 	public List<WeeklyStepDocument> getWeeklySteps(LocalDate date) {
 		LocalDate weekStartDate = StepUtils.getWeekStartDate(date);
 		Query query = new Query(Criteria.where("weekStartDate").is(weekStartDate));
-		return mongoTemplate.find(query, WeeklyStepDocument.class);
+		return mongoTemplate.find(query, WeeklyStepDocument.class, WEEKLY_COLLECTION);
 	}
 
 	@Override
 	public WeeklyStepDocument getWeeklySteps(String username, LocalDate date) {
 		LocalDate weekStartDate = StepUtils.getWeekStartDate(date);
 		Query query = new Query(Criteria.where("username").is(username).and("weekStartDate").is(weekStartDate));
-		return mongoTemplate.findOne(query, WeeklyStepDocument.class);
+		return mongoTemplate.findOne(query, WeeklyStepDocument.class, WEEKLY_COLLECTION);
 	}
 
 	@Override
@@ -59,7 +61,7 @@ public class StepRepositoryImpl implements StepRepository {
 		} else {
 			dailySteps = new DailyStepDocument(uuid, username, steps, now, today);
 		}
-		this.mongoTemplate.save(dailySteps);
+		this.mongoTemplate.save(dailySteps, DAILY_COLLECTION);
 	}
 
 	@Override
@@ -71,7 +73,7 @@ public class StepRepositoryImpl implements StepRepository {
 			String uuid = UUID.randomUUID().toString();
 			dailySteps = new DailyStepDocument(uuid, username, steps, LocalDateTime.now(), date);
 		}
-		this.mongoTemplate.save(dailySteps);
+		this.mongoTemplate.save(dailySteps, DAILY_COLLECTION);
 	}
 
 	@Override
@@ -88,6 +90,6 @@ public class StepRepositoryImpl implements StepRepository {
 					.lastUpdated(now)
 					.build();
 		}
-		this.mongoTemplate.save(weeklySteps);
+		this.mongoTemplate.save(weeklySteps, WEEKLY_COLLECTION);
 	}
 }
