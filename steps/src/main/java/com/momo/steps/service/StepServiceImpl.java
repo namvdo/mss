@@ -21,7 +21,10 @@ public class StepServiceImpl implements StepService {
 	public StepServiceImpl(StepRepository stepRepository, StepCache stepCache) {
 		this.stepRepository = stepRepository;
 		this.stepCache = stepCache;
-		this.stepRepository.saveDailySteps("namvdo", 6969);
+//		this.stepRepository.saveSteps("namvdo", 100, LocalDate.now());
+//		this.stepRepository.saveSteps("namvdo", 200, LocalDate.now().minusDays(1));
+//		this.stepRepository.saveSteps("namvdo", 300, LocalDate.now().minusDays(2));
+//		this.stepRepository.saveSteps("namvdo", 400, LocalDate.now().minusDays(3));
 	}
 
 	@Override
@@ -54,7 +57,6 @@ public class StepServiceImpl implements StepService {
 						today,
 						StatisticType.DAILY
 				);
-				stepCache.addSteps(username, dailySteps.getTotalSteps());
 			}
 		}
 		return stepResponse == null ? StepResponse.empty(username, StatisticType.DAILY) : stepResponse;
@@ -63,13 +65,16 @@ public class StepServiceImpl implements StepService {
 	@Override
 	public StepResponse getWeeklySteps(String username) {
 		WeeklyStep thisWeekSteps = stepCache.getThisWeekSteps(username);
-		return new StepResponse(
-				username,
-				thisWeekSteps.totalSteps(),
-				thisWeekSteps.lastUpdated(),
-				LocalDate.now(),
-				StatisticType.WEEKLY
-		);
+		if (thisWeekSteps != null) {
+			return new StepResponse(
+					username,
+					thisWeekSteps.totalSteps(),
+					thisWeekSteps.lastUpdated(),
+					LocalDate.now(),
+					StatisticType.WEEKLY
+			);
+		}
+		return StepResponse.empty(username, StatisticType.WEEKLY);
 	}
 
 	@Override

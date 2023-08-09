@@ -12,6 +12,7 @@ public interface StepRepository {
 	List<WeeklyStepDocument> getWeeklySteps(LocalDate date);
 	WeeklyStepDocument getWeeklySteps(String username, LocalDate date);
 	void saveDailySteps(String username, int steps);
+	void saveSteps(String username, int steps, LocalDate date);
 
 	void saveWeeklySteps(String username, int steps, LocalDate date);
 }

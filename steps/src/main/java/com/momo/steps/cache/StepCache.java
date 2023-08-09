@@ -6,6 +6,7 @@ import com.momo.steps.document.WeeklyStepDocument;
 import com.momo.steps.jobs.SaveDailyStepTask;
 import com.momo.steps.jobs.SaveThenCleanPastDateTask;
 import com.momo.steps.repository.StepRepository;
+import net.bytebuddy.asm.MemberSubstitution;
 import org.redisson.api.RMap;
 import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
@@ -36,8 +37,12 @@ public class StepCache {
 
 	private void init() {
 		String todayKey = LocalDate.now().toString();
+		LocalDate wsd = StepUtils.getWeekStartDate(LocalDate.now());
+		DateKey weekStartDate = DateKey.of(wsd);
 		RMapCache<String, DailyStep> dailyStepCache = redissonClient.getMapCache(todayKey);
+		RMapCache<String, WeeklyStep> weeklyStepCache = redissonClient.getMapCache(wsd.toString());
 		this.dateToDailyStepCache.put(DateKey.ofToday(), dailyStepCache);
+		this.dateToWeeklyStepCache.put(weekStartDate, weeklyStepCache);
 		// In case the server is restarted, we need to populate the daily cache
 		// by the daily step documents we have in the database.
 		this.loadSavedDailySteps();
@@ -99,7 +104,7 @@ public class StepCache {
 		}
 	}
 
-	public WeeklyStep getThisWeekSteps(String username) {
+	public @Nullable WeeklyStep getThisWeekSteps(String username) {
 		LocalDate weekStartDate = StepUtils.getWeekStartDate(LocalDate.now());
 		DateKey dateKey = DateKey.of(weekStartDate);
 		int dailySteps = this.getDailySteps(username, LocalDate.now());

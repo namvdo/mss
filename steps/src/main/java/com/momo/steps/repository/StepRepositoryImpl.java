@@ -63,6 +63,18 @@ public class StepRepositoryImpl implements StepRepository {
 	}
 
 	@Override
+	public void saveSteps(String username, int steps, LocalDate date) {
+		DailyStepDocument dailySteps = getDailySteps(username, date);
+		if (dailySteps != null) {
+			dailySteps = dailySteps.toBuilder().lastUpdated(LocalDateTime.now()).build();
+		} else {
+			String uuid = UUID.randomUUID().toString();
+			dailySteps = new DailyStepDocument(uuid, username, steps, LocalDateTime.now(), date);
+		}
+		this.mongoTemplate.save(dailySteps);
+	}
+
+	@Override
 	public void saveWeeklySteps(String username, int steps, LocalDate date) {
 		LocalDate weekStartDate = StepUtils.getWeekStartDate(date);
 		WeeklyStepDocument weeklySteps = this.getWeeklySteps(username, weekStartDate);
