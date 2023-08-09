@@ -13,7 +13,13 @@ public class StepController {
 
 	@GetMapping("/daily")
 	public StepResponse getDaily(@RequestParam("username") String username) {
-		return this.stepService.getDailySteps(username);
+		StepResponse dailySteps = this.stepService.getDailySteps(username);
+		return dailySteps;
+	}
+
+	@GetMapping("/weekly")
+	public StepResponse getWeekly(@RequestParam("username") String username) {
+		return this.stepService.getWeeklySteps(username);
 	}
 
 	@PostMapping("/add")

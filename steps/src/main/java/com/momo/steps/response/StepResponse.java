@@ -10,4 +10,9 @@ public record StepResponse(String username, int totalSteps, LocalDateTime lastUp
 		return new StepResponse(username, totalSteps, lastUpdated, date, type);
 	}
 
+
+	public static StepResponse empty(String username, StatisticType statisticType) {
+		return new StepResponse(username, 0, LocalDateTime.now(), LocalDate.now(), statisticType);
+	}
+
 }

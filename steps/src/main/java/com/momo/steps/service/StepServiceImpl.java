@@ -1,44 +1,39 @@
 package com.momo.steps.service;
 
 import com.momo.steps.cache.DailyStep;
-import com.momo.steps.cache.DailyStepCache;
+import com.momo.steps.cache.StepCache;
+import com.momo.steps.cache.WeeklyStep;
 import com.momo.steps.constant.StatisticType;
 import com.momo.steps.document.DailyStepDocument;
-import com.momo.steps.repository.DailyStepRepository;
+import com.momo.steps.repository.StepRepository;
 import com.momo.steps.response.StepResponse;
 import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.asm.MemberSubstitution;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @Slf4j
 public class StepServiceImpl implements StepService {
-	private final DailyStepRepository dailyStepRepository;
-	private final DailyStepCache dailyStepCache;
+	private final StepRepository stepRepository;
+	private final StepCache stepCache;
 
-	public StepServiceImpl(DailyStepRepository dailyStepRepository, DailyStepCache dailyStepCache) {
-		this.dailyStepRepository = dailyStepRepository;
-		this.dailyStepCache = dailyStepCache;
+	public StepServiceImpl(StepRepository stepRepository, StepCache stepCache) {
+		this.stepRepository = stepRepository;
+		this.stepCache = stepCache;
+		this.stepRepository.saveDailySteps("namvdo", 6969);
 	}
 
 	@Override
 	public void addSteps(String username, int steps) {
-		dailyStepCache.addSteps(username, steps);
+		stepCache.addSteps(username, steps);
 	}
 
 	@Override
 	public StepResponse getDailySteps(String username) {
 		// if exists in the cache, return,
 		// else fetch from DB and save to cache then return
-		DailyStep todayStep = dailyStepCache.getTodayStep(username);
+		DailyStep todayStep = stepCache.getTodaySteps(username);
 		LocalDate today = LocalDate.now();
 		StepResponse stepResponse = null;
 		if (todayStep != null) {
@@ -50,22 +45,31 @@ public class StepServiceImpl implements StepService {
 					StatisticType.DAILY
 			);
 		} else {
-			DailyStepDocument dailySteps = dailyStepRepository.getDailySteps(username, today);
-			stepResponse = StepResponse.of(
-					dailySteps.getUsername(),
-					dailySteps.getTotalSteps(),
-					dailySteps.getLastUpdated(),
-					today,
-					StatisticType.DAILY
-			);
-			dailyStepCache.addSteps(username, dailySteps.getTotalSteps());
+			DailyStepDocument dailySteps = stepRepository.getDailySteps(username, today);
+			if (dailySteps != null) {
+				stepResponse = StepResponse.of(
+						dailySteps.getUsername(),
+						dailySteps.getTotalSteps(),
+						dailySteps.getLastUpdated(),
+						today,
+						StatisticType.DAILY
+				);
+				stepCache.addSteps(username, dailySteps.getTotalSteps());
+			}
 		}
-		return stepResponse;
+		return stepResponse == null ? StepResponse.empty(username, StatisticType.DAILY) : stepResponse;
 	}
 
 	@Override
 	public StepResponse getWeeklySteps(String username) {
-		return null;
+		WeeklyStep thisWeekSteps = stepCache.getThisWeekSteps(username);
+		return new StepResponse(
+				username,
+				thisWeekSteps.totalSteps(),
+				thisWeekSteps.lastUpdated(),
+				LocalDate.now(),
+				StatisticType.WEEKLY
+		);
 	}
 
 	@Override
