@@ -10,6 +10,7 @@ import net.bytebuddy.asm.MemberSubstitution;
 import org.redisson.api.RMap;
 import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -27,11 +28,15 @@ public class StepCache {
 	private final Object lock = new Object();
 	private final RedissonClient redissonClient;
 	private final StepRepository stepRepository;
-	public StepCache(RedissonClient redissonClient, StepRepository stepRepository) {
+	public StepCache(RedissonClient redissonClient,
+	                 StepRepository stepRepository,
+	                 @Qualifier("daily") RMapCache<DateKey, RMapCache<String, DailyStep>> dateToDailyStepCache,
+	                 @Qualifier("weekly") RMapCache<DateKey, RMapCache<String, WeeklyStep>> dateToWeeklyStepCache
+	                 ) {
 		this.redissonClient = redissonClient;
 		this.stepRepository = stepRepository;
-		this.dateToDailyStepCache = redissonClient.getMapCache(USER_DAILY_STEP_NAME);
-		this.dateToWeeklyStepCache = redissonClient.getMapCache(USER_WEEKLY_STEP_NAME);
+		this.dateToDailyStepCache = dateToDailyStepCache;
+		this.dateToWeeklyStepCache = dateToWeeklyStepCache;
 		this.init();
 	}
 

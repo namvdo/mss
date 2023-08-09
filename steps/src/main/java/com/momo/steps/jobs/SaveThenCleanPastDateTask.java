@@ -9,7 +9,10 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RMap;
 import org.redisson.api.RMapCache;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,6 +20,7 @@ import java.util.TreeSet;
 
 @AllArgsConstructor
 @Slf4j
+@Component
 public class SaveThenCleanPastDateTask {
 	private RMapCache<DateKey, RMapCache<String, DailyStep>> dateToDailyCache;
 	private StepRepository stepRepository;
