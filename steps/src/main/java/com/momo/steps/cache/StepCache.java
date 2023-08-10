@@ -120,7 +120,8 @@ public class StepCache {
 	private int getWeeklySteps(String username, LocalDate date) {
 		DateKey key = DateKey.of(date);
 		RMapCache<String, WeeklyStep> weeklyCache = this.getWeeklyCache(key);
-		int dailySteps = getDailySteps(username, date);
+		LocalDate today = LocalDate.now();
+		int dailySteps = getDailySteps(username, today);
 		if (weeklyCache.containsKey(username)) {
 			WeeklyStep weeklyStep = weeklyCache.get(username);
 			return weeklyStep.totalSteps() + dailySteps;
