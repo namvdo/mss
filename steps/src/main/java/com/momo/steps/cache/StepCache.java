@@ -35,6 +35,7 @@ public class StepCache {
 		this.weeklyStepRepository = weeklyStepRepository;
 		this.dateToDailyStepCache = dateToDailyStepCache;
 		this.dateToWeeklyStepCache = dateToWeeklyStepCache;
+//		this.weeklyStepRepository.add("namvdo", 234, LocalDate.now());
 		this.init();
 	}
 
@@ -138,7 +139,7 @@ public class StepCache {
 			return weeklyStep.totalSteps() + dailySteps;
 		}
 	}
-	private int getDailySteps(String username, LocalDate date) {
+	public int getDailySteps(String username, LocalDate date) {
 		DateKey key = DateKey.of(date);
 		RMapCache<String, DailyStep> dailyCache = this.getDailyCache(key);
 		if (dailyCache.containsKey(username)) {
@@ -158,8 +159,8 @@ public class StepCache {
 		if (dateToDailyStepCache.containsKey(date)) {
 			return dateToDailyStepCache.get(date);
 		}
-		String todayKey = date.date().toString();
-		return redissonClient.getMapCache(todayKey);
+		String dateKey = date.date().toString();
+		return redissonClient.getMapCache(dateKey);
 	}
 
 

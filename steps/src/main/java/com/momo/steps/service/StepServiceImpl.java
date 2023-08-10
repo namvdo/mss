@@ -4,8 +4,6 @@ import com.momo.steps.cache.DailyStep;
 import com.momo.steps.cache.StepCache;
 import com.momo.steps.cache.WeeklyStep;
 import com.momo.steps.constant.StatisticType;
-import com.momo.steps.document.DailyStepDocument;
-import com.momo.steps.document.WeeklyStepDocument;
 import com.momo.steps.response.StepResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
