@@ -14,10 +14,10 @@ import java.time.LocalDateTime;
 @Getter
 @Builder(toBuilder = true)
 public class WeeklyStepDocument {
-	@Indexed
-	private String id;
+	public static final String SEQUENCE_NAME = "weekly_sequence";
 	private String username;
 	private int totalSteps;
+	@Indexed(useGeneratedName = true, background = true)
 	private LocalDate weekStartDate;
 	private LocalDateTime lastUpdated;
 }
