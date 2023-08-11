@@ -37,31 +37,8 @@ public class SaveThenCleanPastDateTask {
 			updateWeeklySteps(ofYesterday);
 			removeOldDates();
 		}
-//		Set<DateKey> pastDates = getPastDateEntries();
-//		int steps = getTotalStepsFromDates("namvdo", pastDates);
-//		weeklyStepRepository.add("namvdo", steps, LocalDate.now());
 	}
 
-	Set<DateKey> getPastDateEntries() {
-		Set<DateKey> dates = new LinkedHashSet<>();
-		LocalDate today = LocalDate.now();
-		for(final var e : dateToDailyCache.entrySet()) {
-			if (e.getKey().date().isBefore(today)) {
-				dates.add(e.getKey());
-			};
-		}
-		return dates;
-	}
-
-	public int getTotalStepsFromDates(String username, Set<DateKey> keys) {
-		int total = 0;
-		for(final var key : keys) {
-			int dailySteps = stepCache.getDailySteps(username, key.date());
-			total += dailySteps;
-		}
-		log.info("Total: {}", total);
-		return total;
-	}
 
 	private void updateWeeklySteps(DateKey ofYesterday) {
 		RMapCache<String, DailyStep> dailyCache = dateToDailyCache.get(ofYesterday);

@@ -20,11 +20,11 @@ import java.util.List;
 
 @Service
 public class StepCache implements Cache {
+	private final Object lock = new Object();
+	private final RedissonClient redissonClient;
 	private final RMapCache<DateKey, RMapCache<String, DailyStep>> dateToDailyStepCache;
 	private final RMapCache<DateKey, RMapCache<String, WeeklyStep>> dateToWeeklyStepCache;
 	private final RMapCache<DateKey, RMapCache<String, MonthlyStep>> dateToMonthlyStepCache;
-	private final Object lock = new Object();
-	private final RedissonClient redissonClient;
 	private final DailyStepRepository dailyStepRepository;
 	private final WeeklyStepRepository weeklyStepRepository;
 	private final MonthlyStepRepository monthlyStepRepository;
@@ -54,8 +54,6 @@ public class StepCache implements Cache {
 		RMapCache<String, WeeklyStep> weeklyStepCache = redissonClient.getMapCache(wsd.toString());
 		this.dateToDailyStepCache.put(DateKey.ofToday(), dailyStepCache);
 		this.dateToWeeklyStepCache.put(weekStartDate, weeklyStepCache);
-		// In case the server is restarted, we need to load saved steps from the database
-		// to the cache.
 		this.loadSavedDailySteps();
 		this.loadSavedWeeklySteps();
 	}
@@ -111,75 +109,80 @@ public class StepCache implements Cache {
 		}
 	}
 
-	public WeeklyStep getThisWeekSteps(String username) {
-		LocalDate weekStartDate = StepUtils.getWeekStartDate(LocalDate.now());
-		int weeklySteps = this.getWeeklySteps(username, weekStartDate);
-		return new WeeklyStep(username, weeklySteps, weekStartDate, LocalDateTime.now());
-	}
 
 
 
-	public DailyStep getTodaySteps(String username) {
-		Preconditions.checkNotNull(username);
-		int steps = this.getDailySteps(username, LocalDate.now());
-		return new DailyStep(username, steps, LocalDateTime.now());
-	}
+
+
 
 	@Override
-	public int getDailySteps(String username, LocalDate date) {
+	public DailyStep getDailySteps(String username, LocalDate date) {
 		DateKey key = DateKey.of(date);
 		RMapCache<String, DailyStep> dailyCache = this.getDailyCache(key);
 		if (dailyCache.containsKey(username)) {
-			return dailyCache.get(username).totalSteps();
+			return dailyCache.get(username);
 		} else {
 			DailyStepDocument dailyStepDocument = this.dailyStepRepository.get(username, date);
 			if (dailyStepDocument == null) {
-				return 0;
+				return new DailyStep(username, 0, LocalDateTime.now());
 			}
 			DailyStep dailyStep = DailyStep.of(dailyStepDocument);
 			dailyCache.put(username, dailyStep);
-			return dailyStepDocument.getTotalSteps();
+			return dailyStep;
 		}
 	}
 	@Override
-	public int getWeeklySteps(String username, LocalDate date) {
-		DateKey key = DateKey.of(date);
+	public WeeklyStep getWeeklySteps(String username, LocalDate date) {
+		LocalDate wsd = StepUtils.getWeekStartDate(date);
+		DateKey key = DateKey.of(wsd);
 		RMapCache<String, WeeklyStep> weeklyCache = this.getWeeklyCache(key);
 		LocalDate today = LocalDate.now();
-		int dailySteps = getDailySteps(username, today);
+		DailyStep dailySteps = this.getDailySteps(username, today);
 		if (weeklyCache.containsKey(username)) {
 			WeeklyStep weeklyStep = weeklyCache.get(username);
-			return weeklyStep.totalSteps() + dailySteps;
+			int steps = weeklyStep.totalSteps() + dailySteps.totalSteps();
+			return weeklyStep.toBuilder()
+					.totalSteps(steps)
+					.lastUpdated(dailySteps.lastUpdated())
+					.build();
 		} else {
-			WeeklyStepDocument weeklyStepDocument = weeklyStepRepository.get(username, date);
+			WeeklyStepDocument weeklyStepDocument = weeklyStepRepository.get(username, wsd);
 			if (weeklyStepDocument == null) {
-				return dailySteps;
+				return new WeeklyStep(username, dailySteps.totalSteps(), today, dailySteps.lastUpdated());
 			}
-			// Here to make the weekly stats as real-time,
-			// we only put the weekly values excluding today to the cache
-			// and compute the weekly values with today steps on the fly.
 			WeeklyStep weeklyStep = WeeklyStep.of(weeklyStepDocument);
 			weeklyCache.put(username, weeklyStep);
-			return weeklyStep.totalSteps() + dailySteps;
+			return weeklyStep.toBuilder()
+					.totalSteps(weeklyStep.totalSteps() + dailySteps.totalSteps())
+					.build();
 		}
 	}
 
 	@Override
-	public int getMonthlySteps(String username, LocalDate date) {
-		DateKey month = DateKey.of(date);
+	public MonthlyStep getMonthlySteps(String username, LocalDate date) {
+		LocalDate msd = StepUtils.getMonthStartDate(date);
+		DateKey month = DateKey.of(msd);
 		RMapCache<String, MonthlyStep> monthlyCache = getMonthlyCache(month) ;
-		int weeklySteps = getWeeklySteps(username, date);
+		WeeklyStep weeklySteps = getWeeklySteps(username, date);
 		if (monthlyCache.containsKey(username)) {
 			MonthlyStep monthlyStep = monthlyCache.get(username);
-			return monthlyStep.totalSteps() + weeklySteps;
+			int steps = monthlyStep.totalSteps() + weeklySteps.totalSteps();
+			return monthlyStep.toBuilder()
+					.totalSteps(steps)
+					.lastUpdated(weeklySteps.lastUpdated())
+					.build();
 		} else {
-			MonthlyStepDocument monthlyStepDocument = monthlyStepRepository.get(username, date);
+			MonthlyStepDocument monthlyStepDocument = monthlyStepRepository.get(username, msd);
 			if (monthlyStepDocument == null) {
-				return weeklySteps;
+				return new MonthlyStep(username, weeklySteps.totalSteps(), msd, weeklySteps.lastUpdated());
 			}
 			MonthlyStep monthlyStep = MonthlyStep.of(monthlyStepDocument);
 			monthlyCache.put(username, monthlyStep);
-			return monthlyStep.totalSteps() + weeklySteps;
+			int steps = monthlyStep.totalSteps() + weeklySteps.totalSteps();
+			return monthlyStep.toBuilder()
+					.totalSteps(steps)
+					.lastUpdated(weeklySteps.lastUpdated())
+					.build();
 		}
 	}
 

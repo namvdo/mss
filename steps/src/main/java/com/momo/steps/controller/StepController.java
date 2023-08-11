@@ -19,7 +19,7 @@ public class StepController {
 
 	@GetMapping("/daily")
 	public StepResponse getDaily(@RequestParam("username") String username) {
-		return this.stepService.getDailySteps(username);
+		return this.stepService.getThisDaySteps(username);
 	}
 
 	@PostMapping("/daily/add")
@@ -35,12 +35,12 @@ public class StepController {
 
 	@GetMapping("/weekly")
 	public StepResponse getWeekly(@RequestParam("username") String username) {
-		return this.stepService.getWeeklySteps(username);
+		return this.stepService.getThisWeekSteps(username);
 	}
 
 	@GetMapping("/monthly")
 	public StepResponse getMonthly(@RequestParam("username") String username) {
-		return this.stepService.getMonthlySteps(username);
+		return this.stepService.getThisMonthSteps(username);
 	}
 
 

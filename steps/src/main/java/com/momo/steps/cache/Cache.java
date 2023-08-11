@@ -22,7 +22,7 @@ public interface Cache {
 	 *
 	 * @return total number of steps on a given day for the given user
 	 */
-	int getDailySteps(String username, LocalDate date);
+	DailyStep getDailySteps(String username, LocalDate date);
 
 	/**
 	 * Returns total weekly steps of a user in a given date in the cache,
@@ -40,7 +40,7 @@ public interface Cache {
 	 *
 	 * @return total number of steps on a given week for the given user
 	 */
-	int getWeeklySteps(String username, LocalDate date);
+	WeeklyStep getWeeklySteps(String username, LocalDate date);
 
 	/**
 	 * Returns total monthly steps of a user in a given month in the cache,
@@ -58,5 +58,5 @@ public interface Cache {
 	 *
 	 * @return total number of steps on a given month for the given user
 	 */
-	int getMonthlySteps(String username, LocalDate date);
+	MonthlyStep getMonthlySteps(String username, LocalDate date);
 }
