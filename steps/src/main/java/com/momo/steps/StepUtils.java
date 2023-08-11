@@ -16,4 +16,12 @@ public class StepUtils {
 		Preconditions.checkNotNull(date);
 		return date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 	}
+
+
+	public static LocalDate getMonthStartDate(LocalDate date) {
+		Preconditions.checkNotNull(date);
+		return date.withDayOfMonth(1);
+	}
+
+
 }

@@ -19,16 +19,10 @@ public class StepController {
 
 	@GetMapping("/daily")
 	public StepResponse getDaily(@RequestParam("username") String username) {
-		StepResponse dailySteps = this.stepService.getDailySteps(username);
-		return dailySteps;
+		return this.stepService.getDailySteps(username);
 	}
 
-	@GetMapping("/weekly")
-	public StepResponse getWeekly(@RequestParam("username") String username) {
-		return this.stepService.getWeeklySteps(username);
-	}
-
-	@PostMapping("/add")
+	@PostMapping("/daily/add")
 	public void addSteps(@RequestBody StepRequest stepRequest) {
 		Preconditions.checkNotNull(stepRequest);
 		stepService.addSteps(
@@ -36,8 +30,20 @@ public class StepController {
 				stepRequest.steps()
 		);
 		LocalDate date = stepRequest.date() == null ? LocalDate.now() : stepRequest.date();
-		log.info("Adding: {} steps for user: {}, date: {}", stepRequest.steps, stepRequest.username, stepRequest.date);
+		log.info("Adding: {} steps for user: {}, date: {}", stepRequest.steps, stepRequest.username, date);
 	}
+
+	@GetMapping("/weekly")
+	public StepResponse getWeekly(@RequestParam("username") String username) {
+		return this.stepService.getWeeklySteps(username);
+	}
+
+	@GetMapping("/monthly")
+	public StepResponse getMonthly(@RequestParam("username") String username) {
+		return this.stepService.getMonthlySteps(username);
+	}
+
+
 
 	public record StepRequest(String username, int steps, @Nullable LocalDate date) { }
 }

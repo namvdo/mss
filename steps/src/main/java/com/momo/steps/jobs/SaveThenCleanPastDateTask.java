@@ -28,18 +28,18 @@ public class SaveThenCleanPastDateTask {
 	// We save the total steps from yesterday for the weekly steps first,
 	// and then remove the yesterday steps for the daily cache
 //	@Scheduled(cron = "0 15 0 * * *") // run at 12:15 am every day
-	@Scheduled(cron = "0 * * * * *") // run in every minute
+//	@Scheduled(cron = "0 * * * * *") // run in every minute
 	public void savePastDateAndClean() {
 		log.info("Start saving yesterday user steps for weekly steps...");
-		LocalDate yesterday = LocalDate.now().minusDays(0);
+		LocalDate yesterday = LocalDate.now().minusDays(1);
 		DateKey ofYesterday = DateKey.of(yesterday);
-//		if (dateToDailyCache.containsKey(ofYesterday)) {
-//			updateWeeklySteps(ofYesterday);
-//			removeOldDates();
-//		}
-		Set<DateKey> pastDates = getPastDateEntries();
-		int steps = getTotalStepsFromDates("namvdo", pastDates);
-		weeklyStepRepository.add("namvdo", steps, LocalDate.now());
+		if (dateToDailyCache.containsKey(ofYesterday)) {
+			updateWeeklySteps(ofYesterday);
+			removeOldDates();
+		}
+//		Set<DateKey> pastDates = getPastDateEntries();
+//		int steps = getTotalStepsFromDates("namvdo", pastDates);
+//		weeklyStepRepository.add("namvdo", steps, LocalDate.now());
 	}
 
 	Set<DateKey> getPastDateEntries() {

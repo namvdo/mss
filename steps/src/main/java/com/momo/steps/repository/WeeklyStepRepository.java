@@ -44,8 +44,10 @@ public class WeeklyStepRepository extends AbstractStepRepository<WeeklyStepDocum
 
 	@Override
 	public void add(String username, int steps, LocalDate date) {
-		Query query = new Query(Criteria.where("username").is(username).and("date").is(date));
+		LocalDate weekStartDate = StepUtils.getWeekStartDate(date);
+		Query query = new Query(Criteria.where("username").is(username).and("weekStartDate").is(weekStartDate));
 		Update update = new Update()
+				.set("weekStartDate", weekStartDate)
 				.set("totalSteps", steps)
 				.set("lastUpdated", LocalDateTime.now());
 		this.insertOrUpdate(WEEKLY_COLLECTION, query, update, WeeklyStepDocument.class);

@@ -4,7 +4,8 @@ import com.momo.steps.response.StepResponse;
 
 public interface StepService {
 	/**
-	 * Add steps to the current day for a given user.
+	 * Add steps to the current day for a given user. Update the total number of steps
+	 * if there already exists steps with the given user.
 	 *
 	 * @param username user to add more steps
 	 * @param steps number of steps to add
@@ -12,12 +13,26 @@ public interface StepService {
 	void addSteps(String username, int steps);
 
 	/**
-	 * Get total number of persisted steps for a given user in the current day.
+	 * Get total number of accumulated steps for a given user for the current day.
 	 *
-	 * @param username user to get total number of steps
-	 * @return total steps that have been recorded in the current day for a given user
+	 * @param username user to get total number of daily steps
+	 * @return total steps that have been accumulated in the current day for a given user
 	 */
 	StepResponse getDailySteps(String username);
+
+	/**
+	 * Get total number of accumulated steps for a given user for the current week.
+	 *
+	 * @param username user to get total number of weekly steps
+	 * @return total steps that have been accumulated in the current week for a given user
+	 */
 	StepResponse getWeeklySteps(String username);
+
+	/**
+	 * Get total number of accumulated steps for a given user for the current month.
+	 *
+	 * @param username user to get total number of monthly steps
+	 * @return total steps that have been accumulated in the current month for a given user
+	 */
 	StepResponse getMonthlySteps(String username);
 }
