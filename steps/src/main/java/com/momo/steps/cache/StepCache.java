@@ -22,8 +22,11 @@ import java.util.List;
 public class StepCache implements Cache {
 	private final Object lock = new Object();
 	private final RedissonClient redissonClient;
+	// cache contains the total number of steps of a given day
 	private final RMapCache<DateKey, RMapCache<String, DailyStep>> dateToDailyStepCache;
+	// cache contains the total number of steps of a given week, excluding the current day
 	private final RMapCache<DateKey, RMapCache<String, WeeklyStep>> dateToWeeklyStepCache;
+	// cache contains the total number of steps of a given month, excluding the current week
 	private final RMapCache<DateKey, RMapCache<String, MonthlyStep>> dateToMonthlyStepCache;
 	private final DailyStepRepository dailyStepRepository;
 	private final WeeklyStepRepository weeklyStepRepository;
