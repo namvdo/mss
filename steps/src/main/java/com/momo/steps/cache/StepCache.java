@@ -111,10 +111,6 @@ public class StepCache implements Cache {
 
 
 
-
-
-
-
 	@Override
 	public DailyStep getDailySteps(String username, LocalDate date) {
 		DateKey key = DateKey.of(date);
@@ -162,7 +158,7 @@ public class StepCache implements Cache {
 	public MonthlyStep getMonthlySteps(String username, LocalDate date) {
 		LocalDate msd = StepUtils.getMonthStartDate(date);
 		DateKey month = DateKey.of(msd);
-		RMapCache<String, MonthlyStep> monthlyCache = getMonthlyCache(month) ;
+		RMapCache<String, MonthlyStep> monthlyCache = getMonthlyCache(month);
 		WeeklyStep weeklySteps = getWeeklySteps(username, date);
 		if (monthlyCache.containsKey(username)) {
 			MonthlyStep monthlyStep = monthlyCache.get(username);

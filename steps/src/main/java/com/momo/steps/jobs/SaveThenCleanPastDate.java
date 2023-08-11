@@ -13,52 +13,30 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.TreeSet;
 
+@Component
 @AllArgsConstructor
 @Slf4j
-@Component
-public class SaveThenCleanPastDateTask {
+public class SaveThenCleanPastDate implements SaveThenClean {
 	private RMapCache<DateKey, RMapCache<String, DailyStep>> dateToDailyCache;
-	private final StepCache stepCache;
-	private final DailyStepRepository dailyStepRepository;
 	private final WeeklyStepRepository weeklyStepRepository;
-	// We save the total steps from yesterday for the weekly steps first,
-	// and then remove the yesterday steps for the daily cache
-//	@Scheduled(cron = "0 15 0 * * *") // run at 12:15 am every day
-//	@Scheduled(cron = "0 * * * * *") // run in every minute
-	public void savePastDateAndClean() {
-		log.info("Start saving yesterday user steps for weekly steps...");
+	@Override
+	@Scheduled(cron = "0 15 0 * * *") // run at 12:15 am every day
+	public void saveThenClean() {
 		LocalDate yesterday = LocalDate.now().minusDays(1);
-		DateKey ofYesterday = DateKey.of(yesterday);
-		if (dateToDailyCache.containsKey(ofYesterday)) {
-			updateWeeklySteps(ofYesterday);
-			removeOldDates();
-		}
+		DateKey dateKey = DateKey.of(yesterday);
+		updateWeeklySteps(dateKey);
+		removeOldDates();
 	}
 
-
-	private void updateWeeklySteps(DateKey ofYesterday) {
-		RMapCache<String, DailyStep> dailyCache = dateToDailyCache.get(ofYesterday);
+	private void updateWeeklySteps(DateKey ofDate) {
+		RMapCache<String, DailyStep> dailyCache = dateToDailyCache.get(ofDate);
 		LocalDate today = LocalDate.now();
 		for(final var e : dailyCache.entrySet()) {
 			DailyStep dailyStep = e.getValue();
 			addWeeklyStepsFromDate(dailyStep.username(), dailyStep.totalSteps(), today);
 		}
-	}
-
-
-	private void addWeeklyStepsFromDate(String username, int stepsFromThatDay, LocalDate date) {
-		WeeklyStepDocument weeklySteps = this.weeklyStepRepository.get(username, date);
-		int total = 0;
-		if (weeklySteps != null) {
-			total += weeklySteps.getTotalSteps() + stepsFromThatDay;
-		} else {
-			total = stepsFromThatDay;
-		}
-		this.weeklyStepRepository.add(username, total, date);;
 	}
 
 	private void removeOldDates() {
@@ -71,6 +49,17 @@ public class SaveThenCleanPastDateTask {
 				removedDates.add(entry.getKey());
 			}
 		}
-		log.info("Removed " + removedDates.size() + "days, from: {}, to: {}", removedDates.first(), removedDates.last());
+		log.info("Removed {} weeks: {}", removedDates.size(), removedDates);
+	}
+
+	private void addWeeklyStepsFromDate(String username, int stepsFromThatDay, LocalDate date) {
+		WeeklyStepDocument weeklySteps = this.weeklyStepRepository.get(username, date);
+		int total = 0;
+		if (weeklySteps != null) {
+			total += weeklySteps.getTotalSteps() + stepsFromThatDay;
+		} else {
+			total = stepsFromThatDay;
+		}
+		this.weeklyStepRepository.add(username, total, date);;
 	}
 }
