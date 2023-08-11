@@ -29,13 +29,13 @@ public class StepCache implements Cache {
 	private final WeeklyStepRepository weeklyStepRepository;
 	private final MonthlyStepRepository monthlyStepRepository;
 	public StepCache(RedissonClient redissonClient,
-					 DailyStepRepository dailyStepRepository,
-					 WeeklyStepRepository weeklyStepRepository,
-					 MonthlyStepRepository monthlyStepRepository,
+	                 DailyStepRepository dailyStepRepository,
+	                 WeeklyStepRepository weeklyStepRepository,
+	                 MonthlyStepRepository monthlyStepRepository,
 	                 @Qualifier("daily") RMapCache<DateKey, RMapCache<String, DailyStep>> dateToDailyStepCache,
 	                 @Qualifier("weekly") RMapCache<DateKey, RMapCache<String, WeeklyStep>> dateToWeeklyStepCache,
 	                 @Qualifier("monthly") RMapCache<DateKey, RMapCache<String, MonthlyStep>> dateToMonthlyStepCache
-	                 ) {
+	) {
 		this.redissonClient = redissonClient;
 		this.dailyStepRepository = dailyStepRepository;
 		this.weeklyStepRepository = weeklyStepRepository;
@@ -43,52 +43,9 @@ public class StepCache implements Cache {
 		this.dateToDailyStepCache = dateToDailyStepCache;
 		this.dateToWeeklyStepCache = dateToWeeklyStepCache;
 		this.dateToMonthlyStepCache = dateToMonthlyStepCache;
-		this.init();
+		this.createCacheEntries();
+		this.loadSavedSteps();
 	}
-
-	private void init() {
-		String todayKey = LocalDate.now().toString();
-		LocalDate wsd = StepUtils.getWeekStartDate(LocalDate.now());
-		DateKey weekStartDate = DateKey.of(wsd);
-		RMapCache<String, DailyStep> dailyStepCache = redissonClient.getMapCache(todayKey);
-		RMapCache<String, WeeklyStep> weeklyStepCache = redissonClient.getMapCache(wsd.toString());
-		this.dateToDailyStepCache.put(DateKey.ofToday(), dailyStepCache);
-		this.dateToWeeklyStepCache.put(weekStartDate, weeklyStepCache);
-		this.loadSavedDailySteps();
-		this.loadSavedWeeklySteps();
-	}
-
-	private void loadSavedDailySteps() {
-		LocalDate today = LocalDate.now();
-		List<DailyStep> dailySteps = this.dailyStepRepository
-				.get(today)
-				.stream()
-				.map(DailyStep::of)
-				.toList();
-		DateKey dateKey = DateKey.ofToday();
-		RMapCache<String, DailyStep> dailyCache = dateToDailyStepCache.get(dateKey);
-		for(final DailyStep doc : dailySteps) {
-			String uid = doc.username();
-			dailyCache.put(uid, doc);
-		}
-	}
-
-	private void loadSavedWeeklySteps() {
-		LocalDate today = LocalDate.now();
-		List<WeeklyStep> weeklySteps = this.weeklyStepRepository
-				.get(today)
-				.stream()
-				.map(WeeklyStep::of)
-				.toList();
-		LocalDate weekStartDate = StepUtils.getWeekStartDate(today);
-		DateKey dateKey = DateKey.of(weekStartDate);
-		RMapCache<String, WeeklyStep> weeklyCache = dateToWeeklyStepCache.get(dateKey);
-		for(final WeeklyStep doc : weeklySteps) {
-			String uid = doc.username();
-			weeklyCache.put(uid, doc);
-		}
-	}
-
 
 	public void addSteps(String username, int steps) {
 		Preconditions.checkNotNull(username);
@@ -108,8 +65,6 @@ public class StepCache implements Cache {
 			dailyCache.put(username, dailyStep);
 		}
 	}
-
-
 
 	@Override
 	public DailyStep getDailySteps(String username, LocalDate date) {
@@ -182,7 +137,73 @@ public class StepCache implements Cache {
 		}
 	}
 
+	private void createCacheEntries() {
+		LocalDate date = LocalDate.now();
+		String todayKey = date.toString();
+		LocalDate wsd = StepUtils.getWeekStartDate(date);
+		LocalDate msd = StepUtils.getMonthStartDate(date);
+		DateKey weekStartDate = DateKey.of(wsd);
+		DateKey monthStartDate = DateKey.of(msd);
+		RMapCache<String, DailyStep> dailyStepCache = redissonClient.getMapCache(todayKey);
+		RMapCache<String, WeeklyStep> weeklyStepCache = redissonClient.getMapCache(wsd.toString());
+		RMapCache<String, MonthlyStep> monthlyStepCache = redissonClient.getMapCache(msd.toString());
+		this.dateToDailyStepCache.put(DateKey.ofToday(), dailyStepCache);
+		this.dateToWeeklyStepCache.put(weekStartDate, weeklyStepCache);
+		this.dateToMonthlyStepCache.put(monthStartDate, monthlyStepCache);
+	}
 
+	private void loadSavedSteps() {
+		this.loadSavedDailySteps();
+		this.loadSavedWeeklySteps();
+		this.loadSavedMonthlySteps();
+	}
+
+	private void loadSavedDailySteps() {
+		LocalDate today = LocalDate.now();
+		List<DailyStep> dailySteps = this.dailyStepRepository
+				.get(today)
+				.stream()
+				.map(DailyStep::of)
+				.toList();
+		DateKey dateKey = DateKey.ofToday();
+		RMapCache<String, DailyStep> dailyCache = dateToDailyStepCache.get(dateKey);
+		for(final DailyStep doc : dailySteps) {
+			String uid = doc.username();
+			dailyCache.put(uid, doc);
+		}
+	}
+
+	private void loadSavedWeeklySteps() {
+		LocalDate today = LocalDate.now();
+		List<WeeklyStep> weeklySteps = this.weeklyStepRepository
+				.get(today)
+				.stream()
+				.map(WeeklyStep::of)
+				.toList();
+		LocalDate weekStartDate = StepUtils.getWeekStartDate(today);
+		DateKey dateKey = DateKey.of(weekStartDate);
+		RMapCache<String, WeeklyStep> weeklyCache = dateToWeeklyStepCache.get(dateKey);
+		for(final WeeklyStep doc : weeklySteps) {
+			String uid = doc.username();
+			weeklyCache.put(uid, doc);
+		}
+	}
+
+	private void loadSavedMonthlySteps() {
+		LocalDate today = LocalDate.now();
+		List<MonthlyStep> monthlySteps = this.monthlyStepRepository
+				.get(today)
+				.stream()
+				.map(MonthlyStep::of)
+				.toList();
+		LocalDate msd = StepUtils.getMonthStartDate(today);
+		DateKey dateKey = DateKey.of(msd);
+		RMapCache<String, MonthlyStep> monthlyCache = dateToMonthlyStepCache.get(dateKey);
+		for(final MonthlyStep doc : monthlySteps) {
+			String uid = doc.username();
+			monthlyCache.put(uid, doc);
+		}
+	}
 
 
 	private RMapCache<String, DailyStep> getDailyCache(DateKey date) {
