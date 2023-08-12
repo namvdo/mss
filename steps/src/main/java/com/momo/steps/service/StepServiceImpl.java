@@ -7,25 +7,31 @@ import com.momo.steps.cache.MonthlyStep;
 import com.momo.steps.cache.StepCache;
 import com.momo.steps.cache.WeeklyStep;
 import com.momo.steps.constant.StatisticType;
+import com.momo.steps.event.StepEventSender;
+import com.momo.steps.event.StepMessage;
 import com.momo.steps.response.StepResponse;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class StepServiceImpl implements StepService {
 	private final StepCache stepCache;
+	private final StepEventSender stepEventSender;
 
-	public StepServiceImpl(StepCache stepCache) {
-		this.stepCache = stepCache;
-	}
 
 	@Override
 	public void addSteps(String username, int steps) {
 		stepCache.addSteps(username, steps);
+		long timestamp = System.currentTimeMillis();
+		StepMessage stepMessage = new StepMessage(username, steps, timestamp);
+		stepEventSender.sendEvent(stepMessage);
 	}
 
 	@Override

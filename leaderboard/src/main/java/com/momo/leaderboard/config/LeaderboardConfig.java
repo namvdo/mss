@@ -1,11 +1,14 @@
 package com.momo.leaderboard.config;
 
-import com.momo.leaderboard.response.LeaderboardItem;
+import com.momo.leaderboard.response.StepItem;
 import lombok.AllArgsConstructor;
+import org.redisson.api.RMap;
 import org.redisson.api.RPriorityQueue;
 import org.redisson.api.RedissonClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Configuration
 @AllArgsConstructor
@@ -13,7 +16,15 @@ public class LeaderboardConfig {
 	private final RedissonClient redissonClient;
 	public static final String LEADERBOARD_NAME = "leaderboard";
 	@Bean
-	RPriorityQueue<LeaderboardItem> getLeaderboardQueue() {
+	public RPriorityQueue<StepItem> getLeaderboardQueue() {
 		return redissonClient.getPriorityQueue(LEADERBOARD_NAME);
+	}
+
+
+	@Bean
+	public List<LeaderboardListener> listeners() {
+		return List.of(
+				new LeaderboardListenerImpl()
+		);
 	}
 }

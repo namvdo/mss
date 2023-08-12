@@ -1,3 +1,5 @@
 spring:
   kafka:
     bootstrap-servers: ${KAFKA_HOST}
+server:
+  port: 8081
