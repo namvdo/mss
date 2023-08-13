@@ -73,7 +73,7 @@ public class StepCache implements Cache {
 
 	@Override
 	public IStep getDailySteps(String username, LocalDate date) {
-		DateKey key = DateKey.of(date);
+		DateKey key = DateKey.of(StepType.DAILY, date);
 		RMapCache<String, Step> dailyCache = this.getDailyCache(key);
 		if (dailyCache.containsKey(username)) {
 			return dailyCache.get(username);
@@ -90,7 +90,7 @@ public class StepCache implements Cache {
 	@Override
 	public IStep getWeeklySteps(String username, LocalDate date) {
 		LocalDate wsd = StepUtils.getWeekStartDate(date);
-		DateKey key = DateKey.of(wsd);
+		DateKey key = DateKey.of(StepType.WEEKLY, wsd);
 		RMapCache<String, Step> weeklyCache = this.getWeeklyCache(key);
 		LocalDate today = LocalDate.now();
 		IStep dailySteps = this.getDailySteps(username, today);
@@ -117,7 +117,7 @@ public class StepCache implements Cache {
 	@Override
 	public Step getMonthlySteps(String username, LocalDate date) {
 		LocalDate msd = StepUtils.getMonthStartDate(date);
-		DateKey month = DateKey.of(msd);
+		DateKey month = DateKey.of(StepType.MONTHLY, msd);
 		RMapCache<String, Step> monthlyCache = getMonthlyCache(month);
 		IStep weeklySteps = getWeeklySteps(username, date);
 		if (monthlyCache.containsKey(username)) {
@@ -194,10 +194,9 @@ public class StepCache implements Cache {
 
 
 	private RMapCache<String, Step> getDailyEntries(LocalDate date) {
-		String todayKey = date.toString();
-		DateKey key = DateKey.of(date);
+		DateKey key = DateKey.of(StepType.DAILY, date);
 		if (!this.dateToDailyStepCache.containsKey(key)) {
-			RMapCache<String, Step> cache = this.redissonClient.getMapCache(todayKey);
+			RMapCache<String, Step> cache = this.redissonClient.getMapCache(key.toString());
 			this.dateToDailyStepCache.put(key, cache);
 			return cache;
 		} else {
@@ -207,10 +206,9 @@ public class StepCache implements Cache {
 
 
 	private RMapCache<String, Step> getWeeklyEntries(LocalDate date) {
-		String weekKey = date.toString();
-		DateKey key = DateKey.of(date);
+		DateKey key = DateKey.of(StepType.WEEKLY, date);
 		if (!this.dateToWeeklyStepCache.containsKey(key)) {
-			RMapCache<String, Step> cache = this.redissonClient.getMapCache(weekKey);
+			RMapCache<String, Step> cache = this.redissonClient.getMapCache(key.toString());
 			this.dateToWeeklyStepCache.put(key, cache);
 			return cache;
 		} else {
@@ -220,10 +218,9 @@ public class StepCache implements Cache {
 
 
 	private RMapCache<String, Step> getMonthlyEntries(LocalDate date) {
-		String monthKey = date.toString();
-		DateKey key = DateKey.of(date);
+		DateKey key = DateKey.of(StepType.MONTHLY, date);
 		if (!this.dateToMonthlyStepCache.containsKey(key)) {
-			RMapCache<String, Step> cache = this.redissonClient.getMapCache(monthKey);
+			RMapCache<String, Step> cache = this.redissonClient.getMapCache(key.toString());
 			this.dateToMonthlyStepCache.put(key, cache);
 			return cache;
 		}
@@ -235,8 +232,7 @@ public class StepCache implements Cache {
 		if (dateToDailyStepCache.containsKey(date)) {
 			return dateToDailyStepCache.get(date);
 		}
-		String dateKey = date.date().toString();
-		return redissonClient.getMapCache(dateKey);
+		return redissonClient.getMapCache(date.toString());
 	}
 
 
@@ -244,8 +240,7 @@ public class StepCache implements Cache {
 		if (dateToWeeklyStepCache.containsKey(weekStartDate)) {
 			return dateToWeeklyStepCache.get(weekStartDate);
 		}
-		String weekKey = weekStartDate.date().toString();
-		return redissonClient.getMapCache(weekKey);
+		return redissonClient.getMapCache(weekStartDate.toString());
 	}
 
 
@@ -253,7 +248,6 @@ public class StepCache implements Cache {
 		if (dateToMonthlyStepCache.containsKey(monthStartDate)) {
 			return dateToMonthlyStepCache.get(monthStartDate);
 		}
-		String monthKey = monthStartDate.date().toString();
-		return redissonClient.getMapCache(monthKey);
+		return redissonClient.getMapCache(monthStartDate.toString());
 	}
 }

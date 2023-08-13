@@ -2,6 +2,7 @@ package com.momo.steps.jobs;
 
 import com.momo.steps.cache.DateKey;
 import com.momo.steps.cache.Step;
+import com.momo.steps.cache.StepType;
 import com.momo.steps.document.WeeklyStepDocument;
 import com.momo.steps.repository.WeeklyStepRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,7 @@ public class SaveThenCleanPastDate implements SaveThenClean {
 	@Scheduled(cron = "0 15 0 * * *") // run at 12:15 am every day
 	public void saveThenClean() {
 		LocalDate yesterday = LocalDate.now().minusDays(1);
-		DateKey dateKey = DateKey.of(yesterday);
+		DateKey dateKey = DateKey.of(StepType.DAILY, yesterday);
 		updateWeeklySteps(dateKey);
 		removeOldDates();
 	}

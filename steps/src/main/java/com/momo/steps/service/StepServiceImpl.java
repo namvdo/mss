@@ -1,7 +1,6 @@
 package com.momo.steps.service;
 
 import com.momo.steps.cache.IStep;
-import com.momo.steps.cache.Step;
 import com.momo.steps.cache.StepCache;
 import com.momo.steps.constant.StatisticType;
 import com.momo.steps.event.StepEventSender;

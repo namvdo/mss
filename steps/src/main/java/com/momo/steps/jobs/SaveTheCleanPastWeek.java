@@ -3,6 +3,7 @@ package com.momo.steps.jobs;
 import com.momo.steps.StepUtils;
 import com.momo.steps.cache.DateKey;
 import com.momo.steps.cache.Step;
+import com.momo.steps.cache.StepType;
 import com.momo.steps.document.MonthlyStepDocument;
 import com.momo.steps.repository.MonthlyStepRepository;
 import lombok.AllArgsConstructor;
@@ -37,7 +38,7 @@ public class SaveTheCleanPastWeek implements SaveThenClean {
 		LocalDate previousWeek = today
 				.minusWeeks(1)
 				.with(DayOfWeek.MONDAY);
-		DateKey dateKey = DateKey.of(previousWeek);
+		DateKey dateKey = DateKey.of(StepType.WEEKLY, previousWeek);
 		updateMonthlySteps(dateKey);
 		removeOldWeeks();
 	}

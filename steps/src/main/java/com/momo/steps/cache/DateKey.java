@@ -1,20 +1,16 @@
 package com.momo.steps.cache;
 
-import org.redisson.api.MapOptions;
-import org.redisson.api.RMap;
-
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.Objects;
 
-public record DateKey(LocalDate date) implements Comparable<DateKey> {
+public record DateKey(StepType type, LocalDate date) implements Comparable<DateKey> {
 
-	public static DateKey of(LocalDate date) {
-		return new DateKey(date);
+	public static DateKey of(StepType type, LocalDate date) {
+		return new DateKey(type, date);
 	}
 
 	public static DateKey ofToday() {
-		return new DateKey(LocalDate.now());
+		return new DateKey(StepType.DAILY, LocalDate.now());
 	}
 
 
@@ -34,5 +30,10 @@ public record DateKey(LocalDate date) implements Comparable<DateKey> {
 	@Override
 	public int compareTo(DateKey o) {
 		return this.date.compareTo(o.date);
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s:%s", this.type.name(), this.date.toString());
 	}
 }
