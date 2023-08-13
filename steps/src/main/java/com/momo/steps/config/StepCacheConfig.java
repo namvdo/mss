@@ -1,9 +1,6 @@
 package com.momo.steps.config;
 
-import com.momo.steps.cache.DailyStep;
-import com.momo.steps.cache.DateKey;
-import com.momo.steps.cache.MonthlyStep;
-import com.momo.steps.cache.WeeklyStep;
+import com.momo.steps.cache.*;
 import lombok.AllArgsConstructor;
 import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
@@ -22,19 +19,19 @@ public class StepCacheConfig {
 	private final RedissonClient redissonClient;
 	@Bean
 	@Qualifier("daily")
-	public RMapCache<DateKey, RMapCache<String, DailyStep>> dailyStepCache() {
+	public RMapCache<DateKey, RMapCache<String, Step>> dailyStepCache() {
 		return this.redissonClient.getMapCache(USER_DAILY_STEP_NAME);
 	}
 
 	@Bean
 	@Qualifier("weekly")
-	public RMapCache<DateKey, RMapCache<String, WeeklyStep>> weeklyStepCache() {
+	public RMapCache<DateKey, RMapCache<String, Step>> weeklyStepCache() {
 		return this.redissonClient.getMapCache(USER_WEEKLY_STEP_NAME);
 	}
 
 	@Bean
 	@Qualifier("monthly")
-	public RMapCache<DateKey, RMapCache<String, MonthlyStep>> monthlyStepCache() {
+	public RMapCache<DateKey, RMapCache<String, Step>> monthlyStepCache() {
 		return this.redissonClient.getMapCache(USER_MONTHLY_STEP_NAME);
 	}
 }

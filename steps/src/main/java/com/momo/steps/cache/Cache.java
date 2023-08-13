@@ -1,9 +1,6 @@
 package com.momo.steps.cache;
 
-import org.redisson.api.RMapCache;
-
 import java.time.LocalDate;
-import java.util.Map;
 
 /**
  * Basic cache implementation that supports fetching total steps of current day, week or month.
@@ -22,7 +19,7 @@ public interface Cache {
 	 *
 	 * @return total number of steps on a given day for the given user
 	 */
-	DailyStep getDailySteps(String username, LocalDate date);
+	IStep getDailySteps(String username, LocalDate date);
 
 	/**
 	 * Returns total weekly steps of a user in a given date in the cache,
@@ -40,7 +37,7 @@ public interface Cache {
 	 *
 	 * @return total number of steps on a given week for the given user
 	 */
-	WeeklyStep getWeeklySteps(String username, LocalDate date);
+	IStep getWeeklySteps(String username, LocalDate date);
 
 	/**
 	 * Returns total monthly steps of a user in a given month in the cache,
@@ -58,5 +55,5 @@ public interface Cache {
 	 *
 	 * @return total number of steps on a given month for the given user
 	 */
-	MonthlyStep getMonthlySteps(String username, LocalDate date);
+	IStep getMonthlySteps(String username, LocalDate date);
 }

@@ -1,5 +1,8 @@
 package com.momo.steps.document;
 
+import com.momo.steps.cache.DailyIStep;
+import com.momo.steps.cache.IStep;
+import com.momo.steps.cache.Step;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,7 +20,7 @@ import java.time.LocalDateTime;
 @Getter
 @ToString
 @Builder(toBuilder = true)
-public class DailyStepDocument {
+public class DailyStepDocument{
 	@Transient
 	public static final String SEQUENCE_NAME = "daily_sequence";
 	private String username;
@@ -25,4 +28,14 @@ public class DailyStepDocument {
 	private LocalDateTime lastUpdated;
 	@Indexed(useGeneratedName = true, background = true)
 	private LocalDate date;
+
+	public Step getAsStep() {
+		return new Step(
+				this.totalSteps,
+				this.getDate(),
+				this.getLastUpdated(),
+				"daily"
+		);
+	}
+
 }

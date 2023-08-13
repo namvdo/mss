@@ -1,6 +1,6 @@
 package com.momo.steps.jobs;
 
-import com.momo.steps.cache.DailyStep;
+import com.momo.steps.cache.DailyIStep;
 import com.momo.steps.cache.DateKey;
 import com.momo.steps.repository.DailyStepRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -13,9 +13,9 @@ import java.time.LocalDate;
 @Slf4j
 @Component
 public class SaveDailyStepTask {
-	private final RMapCache<DateKey, RMapCache<String, DailyStep>> cache;
+	private final RMapCache<DateKey, RMapCache<String, DailyIStep>> cache;
 	private final DailyStepRepository dailyStepRepository;
-	public SaveDailyStepTask(RMapCache<DateKey, RMapCache<String, DailyStep>> cache, DailyStepRepository dailyStepRepository) {
+	public SaveDailyStepTask(RMapCache<DateKey, RMapCache<String, DailyIStep>> cache, DailyStepRepository dailyStepRepository) {
 		this.cache = cache;
 		this.dailyStepRepository = dailyStepRepository;
 	}
@@ -25,14 +25,14 @@ public class SaveDailyStepTask {
 	public void saveDailySteps() {
 		long start = System.currentTimeMillis();
 		DateKey ofToday = DateKey.ofToday();
-		RMapCache<String, DailyStep> todayCache = cache.get(ofToday);
+		RMapCache<String, DailyIStep> todayCache = cache.get(ofToday);
 		log.info("Start saving daily steps entries into database");
 		if (todayCache == null) {
 			log.warn("Daily step cache is empty");
 			return;
 		}
 		for(final var entry : todayCache.entrySet()) {
-			DailyStep dailyStep = entry.getValue();
+			DailyIStep dailyStep = entry.getValue();
 			LocalDate today = dailyStep.lastUpdated().toLocalDate();
 			if (dailyStep.totalSteps() > 0) {
 				dailyStepRepository.add(dailyStep.username(), dailyStep.totalSteps(), today);

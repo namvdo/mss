@@ -1,10 +1,8 @@
 package com.momo.steps.jobs;
 
-import com.momo.steps.cache.DailyStep;
+import com.momo.steps.cache.DailyIStep;
 import com.momo.steps.cache.DateKey;
-import com.momo.steps.cache.StepCache;
 import com.momo.steps.document.WeeklyStepDocument;
-import com.momo.steps.repository.DailyStepRepository;
 import com.momo.steps.repository.WeeklyStepRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +17,7 @@ import java.util.TreeSet;
 @AllArgsConstructor
 @Slf4j
 public class SaveThenCleanPastDate implements SaveThenClean {
-	private RMapCache<DateKey, RMapCache<String, DailyStep>> dateToDailyCache;
+	private RMapCache<DateKey, RMapCache<String, DailyIStep>> dateToDailyCache;
 	private final WeeklyStepRepository weeklyStepRepository;
 	@Override
 	@Scheduled(cron = "0 15 0 * * *") // run at 12:15 am every day
@@ -31,10 +29,10 @@ public class SaveThenCleanPastDate implements SaveThenClean {
 	}
 
 	private void updateWeeklySteps(DateKey ofDate) {
-		RMapCache<String, DailyStep> dailyCache = dateToDailyCache.get(ofDate);
+		RMapCache<String, DailyIStep> dailyCache = dateToDailyCache.get(ofDate);
 		LocalDate today = LocalDate.now();
 		for(final var e : dailyCache.entrySet()) {
-			DailyStep dailyStep = e.getValue();
+			DailyIStep dailyStep = e.getValue();
 			addWeeklyStepsFromDate(dailyStep.username(), dailyStep.totalSteps(), today);
 		}
 	}

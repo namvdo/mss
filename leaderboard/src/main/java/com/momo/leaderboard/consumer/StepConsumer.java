@@ -1,6 +1,7 @@
 package com.momo.leaderboard.consumer;
 
 import com.momo.leaderboard.config.LeaderboardListener;
+import com.momo.leaderboard.response.LeaderboardResponse;
 import com.momo.leaderboard.response.StepItem;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RPriorityQueue;
@@ -16,7 +17,6 @@ public class StepConsumer {
 
 	private final RPriorityQueue<StepItem> queue;
 	private final List<LeaderboardListener> listeners;
-
 
 	public StepConsumer(RPriorityQueue<StepItem> queue, List<LeaderboardListener> listeners) {
 		this.queue = queue;
@@ -46,16 +46,22 @@ public class StepConsumer {
 	private void removeBy(RPriorityQueue<StepItem> items, String username) {
 		for(StepItem stepItem : queue) {
 			if (stepItem.getUsername().equals(username)) {
-				boolean remove = items.remove(stepItem);
-				log.info("removed: {}", remove);
+				items.remove(stepItem);
 			}
 		}
 	}
 
 	private void notifyListeners() {
 		for(final LeaderboardListener leaderboardListener : listeners) {
-			log.info("Leaderboard has changed!: {}", queue);
+			LeaderboardResponse response = leaderboardResponse();
+			leaderboardListener.onLeaderboardChanged(response);
 		}
+	}
+
+
+	private LeaderboardResponse leaderboardResponse() {
+		List<StepItem> items = new ArrayList<>(queue);
+		return new LeaderboardResponse(items, items.size());
 	}
 
 
