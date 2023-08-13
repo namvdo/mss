@@ -4,8 +4,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public interface IStep {
+	String id();
 	LocalDate date();
 	LocalDateTime lastUpdated();
 	int totalSteps();
-	String type();
+	StepType type();
 }

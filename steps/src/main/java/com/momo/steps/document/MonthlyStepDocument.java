@@ -2,6 +2,7 @@ package com.momo.steps.document;
 
 import com.momo.steps.cache.IStep;
 import com.momo.steps.cache.Step;
+import com.momo.steps.cache.StepType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,10 +26,11 @@ public class MonthlyStepDocument {
 
 	public Step getAsStep() {
 		return new Step(
+				this.username,
 				this.totalSteps,
 				this.getMonthStartDate(),
 				this.getLastUpdated(),
-				"monthly"
+				StepType.MONTHLY
 		);
 	}
 }

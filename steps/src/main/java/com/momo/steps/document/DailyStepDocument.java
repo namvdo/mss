@@ -1,8 +1,7 @@
 package com.momo.steps.document;
 
-import com.momo.steps.cache.DailyIStep;
-import com.momo.steps.cache.IStep;
 import com.momo.steps.cache.Step;
+import com.momo.steps.cache.StepType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +10,6 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -31,10 +29,11 @@ public class DailyStepDocument{
 
 	public Step getAsStep() {
 		return new Step(
+				this.username,
 				this.totalSteps,
 				this.getDate(),
 				this.getLastUpdated(),
-				"daily"
+				StepType.DAILY
 		);
 	}
 

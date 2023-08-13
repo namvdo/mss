@@ -6,17 +6,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Builder(toBuilder = true)
-public record Step(int totalSteps, LocalDate date, LocalDateTime lastUpdated, String type) implements IStep {
-	public static Step ofDaily(int totalSteps, LocalDate date, LocalDateTime lastUpdated) {
-		return new Step(totalSteps, date, lastUpdated, "daily");
+public record Step(String id, int totalSteps, LocalDate date, LocalDateTime lastUpdated, StepType type) implements IStep {
+	public static Step ofDaily(String id, int totalSteps, LocalDate date, LocalDateTime lastUpdated) {
+		return new Step(id, totalSteps, date, lastUpdated, StepType.DAILY);
 	}
 
-	public static Step ofWeekly(int totalSteps, LocalDate date, LocalDateTime lastUpdated) {
-		return new Step(totalSteps, date, lastUpdated, "weekly");
+	public static Step ofWeekly(String id, int totalSteps, LocalDate date, LocalDateTime lastUpdated) {
+		return new Step(id, totalSteps, date, lastUpdated, StepType.WEEKLY);
 	}
 
-	public static Step ofMonthly(int totalSteps, LocalDate date, LocalDateTime lastUpdated) {
-		return new Step(totalSteps, date, lastUpdated, "monthly");
+	public static Step ofMonthly(String id, int totalSteps, LocalDate date, LocalDateTime lastUpdated) {
+		return new Step(id, totalSteps, date, lastUpdated, StepType.MONTHLY);
 	}
 
 	@Override
@@ -35,7 +35,7 @@ public record Step(int totalSteps, LocalDate date, LocalDateTime lastUpdated, St
 	}
 
 	@Override
-	public String type() {
+	public StepType type() {
 		return this.type;
 	}
 }

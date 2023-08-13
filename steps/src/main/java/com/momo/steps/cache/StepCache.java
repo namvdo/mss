@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StepCache implements Cache {
@@ -46,10 +48,10 @@ public class StepCache implements Cache {
 		this.dateToDailyStepCache = dateToDailyStepCache;
 		this.dateToWeeklyStepCache = dateToWeeklyStepCache;
 		this.dateToMonthlyStepCache = dateToMonthlyStepCache;
-		this.createCacheEntries();
+		this.loadCacheEntries();
 	}
 
-	public void addSteps(String username, int steps) {
+	public int addSteps(String username, int steps) {
 		Preconditions.checkNotNull(username);
 		DateKey ofToday = DateKey.ofToday();
 		RMap<String, Step> dailyCache = getDailyCache(ofToday);
@@ -63,8 +65,9 @@ public class StepCache implements Cache {
 				int prevSteps = dailyStep.totalSteps();
 				totalSteps = prevSteps + steps;
 			}
-			dailyStep = Step.ofDaily(totalSteps, ofToday.date(), now);
+			dailyStep = Step.ofDaily(username, totalSteps, ofToday.date(), now);
 			dailyCache.put(username, dailyStep);
+			return totalSteps;
 		}
 	}
 
@@ -77,7 +80,7 @@ public class StepCache implements Cache {
 		} else {
 			DailyStepDocument dailyStepDocument = this.dailyStepRepository.get(username, date);
 			if (dailyStepDocument == null) {
-				return new DailyIStep(username, 0, LocalDateTime.now());
+				return Step.ofDaily(username, 0, date, LocalDateTime.now());
 			}
 			Step asStep = dailyStepDocument.getAsStep();
 			dailyCache.put(username, asStep);
@@ -101,7 +104,7 @@ public class StepCache implements Cache {
 		} else {
 			WeeklyStepDocument weeklyStepDocument = weeklyStepRepository.get(username, wsd);
 			if (weeklyStepDocument == null) {
-				return new WeeklyIStep(username, dailySteps.totalSteps(), today, dailySteps.lastUpdated());
+				return Step.ofWeekly(username, dailySteps.totalSteps(), dailySteps.date(), dailySteps.lastUpdated());
 			}
 			Step weeklyStep = weeklyStepDocument.getAsStep();
 			weeklyCache.put(username, weeklyStep);
@@ -127,7 +130,7 @@ public class StepCache implements Cache {
 		} else {
 			MonthlyStepDocument monthlyStepDocument = monthlyStepRepository.get(username, msd);
 			if (monthlyStepDocument == null) {
-				return Step.ofMonthly(weeklySteps.totalSteps(), msd, weeklySteps.lastUpdated());
+				return Step.ofMonthly(username, weeklySteps.totalSteps(), msd, weeklySteps.lastUpdated());
 			}
 			Step monthlyStep = monthlyStepDocument.getAsStep();
 			monthlyCache.put(username, monthlyStep);
@@ -139,42 +142,58 @@ public class StepCache implements Cache {
 		}
 	}
 
-	private void createCacheEntries() {
-		this.createWeeklyEntries();
-		this.createMonthlyEntries();
+	private void loadCacheEntries() {
+		// we first load the cache entries from Redis server,
+		// and compare the values with ones stored in the database,
+		// if the data in the database seems to be fresher,
+		// we will update the cache, otherwise we keep it as it is.
+		LocalDate today = LocalDate.now();
+		RMapCache<String, Step> dailyEntries = this.getDailyEntries(today);
+		populateCacheFromDbIfNeeded(StepType.DAILY, today, dailyEntries);
+
+		LocalDate wsd = StepUtils.getWeekStartDate(today);
+		RMapCache<String, Step> weeklyEntries = this.getWeeklyEntries(wsd);
+		populateCacheFromDbIfNeeded(StepType.WEEKLY, wsd, weeklyEntries);
+
+		LocalDate msd = StepUtils.getMonthStartDate(today);
+		RMapCache<String, Step> monthlyEntries = this.getMonthlyEntries(msd);
+		populateCacheFromDbIfNeeded(StepType.MONTHLY, msd, monthlyEntries);
 	}
 
-
-	private void updateDailyEntriesFromDbIfNeeded(RMapCache<String, DailyIStep> dailyCache, List<DailyStepDocument> steps) {
-		for(final DailyStepDocument dailyStepDocument : steps) {
-			String username = dailyStepDocument.getUsername();
-			if (dailyCache.containsKey(username)) {
-				DailyIStep dailyStep = dailyCache.get(username);
-				if (dailyStep.lastUpdated().isBefore(dailyStepDocument.getLastUpdated())) {
-					DailyIStep fresherStep = DailyIStep.of(dailyStepDocument);
-					dailyCache.put(username, fresherStep);
+	private void populateCacheFromDbIfNeeded(StepType type,
+											 LocalDate date,
+	                                         RMapCache<String, Step> cache
+	) {
+		List<Step> steps = new ArrayList<>();
+		switch (type) {
+			case DAILY -> steps = this.dailyStepRepository.get(date)
+					.stream()
+					.map(DailyStepDocument::getAsStep)
+					.collect(Collectors.toList());
+			case WEEKLY -> steps = this.weeklyStepRepository.get(date)
+					.stream()
+					.map(WeeklyStepDocument::getAsStep)
+					.collect(Collectors.toList());
+			case MONTHLY -> steps = this.monthlyStepRepository.get(date)
+					.stream()
+					.map(MonthlyStepDocument::getAsStep)
+					.collect(Collectors.toList());
+		}
+		for(final Step step : steps){
+			String id = step.id();
+			Step cachedStep = cache.get(id);
+			if (cachedStep == null) {
+				cache.put(id, step);
+			} else {
+				if (cachedStep.date().isBefore(step.date())) {
+					cache.put(id, step);
 				}
 			}
 		}
 	}
 
 
-	private void updateWeeklyEntriesFromDbIfNeeded(RMapCache<String, WeeklyIStep> weeklyCache, List<WeeklyStepDocument> steps) {
-		for(final WeeklyStepDocument weeklyStepDocument : steps) {
-			String username = weeklyStepDocument.getUsername();
-			if (weeklyCache.containsKey(username)) {
-				WeeklyIStep weeklyStep = weeklyCache.get(username);
-				if (weeklyStep.lastUpdated().isBefore(weeklyStepDocument.getLastUpdated())) {
-					WeeklyIStep fresherStep = WeeklyIStep.of(weeklyStepDocument);
-					weeklyCache.put(username, fresherStep);
-				}
-			}
-		}
-	}
-
-
-	private RMapCache<String, Step> createDailyEntries() {
-		LocalDate date = LocalDate.now();
+	private RMapCache<String, Step> getDailyEntries(LocalDate date) {
 		String todayKey = date.toString();
 		DateKey key = DateKey.of(date);
 		if (!this.dateToDailyStepCache.containsKey(key)) {
@@ -187,25 +206,28 @@ public class StepCache implements Cache {
 	}
 
 
-	private void createWeeklyEntries() {
-		LocalDate date = StepUtils.getWeekStartDate(LocalDate.now());
+	private RMapCache<String, Step> getWeeklyEntries(LocalDate date) {
 		String weekKey = date.toString();
 		DateKey key = DateKey.of(date);
 		if (!this.dateToWeeklyStepCache.containsKey(key)) {
-			RMapCache<String, IStep> cache = this.redissonClient.getMapCache(weekKey);
+			RMapCache<String, Step> cache = this.redissonClient.getMapCache(weekKey);
 			this.dateToWeeklyStepCache.put(key, cache);
+			return cache;
+		} else {
+			return this.dateToWeeklyStepCache.get(key);
 		}
 	}
 
 
-	private void createMonthlyEntries() {
-		LocalDate date = StepUtils.getMonthStartDate(LocalDate.now());
+	private RMapCache<String, Step> getMonthlyEntries(LocalDate date) {
 		String monthKey = date.toString();
 		DateKey key = DateKey.of(date);
 		if (!this.dateToMonthlyStepCache.containsKey(key)) {
-			RMapCache<String, IStep> cache = this.redissonClient.getMapCache(monthKey);
+			RMapCache<String, Step> cache = this.redissonClient.getMapCache(monthKey);
 			this.dateToMonthlyStepCache.put(key, cache);
+			return cache;
 		}
+		return this.dateToMonthlyStepCache.get(key);
 	}
 
 

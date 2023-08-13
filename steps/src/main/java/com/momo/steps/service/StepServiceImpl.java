@@ -1,9 +1,8 @@
 package com.momo.steps.service;
 
-import com.momo.steps.cache.DailyIStep;
-import com.momo.steps.cache.MonthlyIStep;
+import com.momo.steps.cache.IStep;
+import com.momo.steps.cache.Step;
 import com.momo.steps.cache.StepCache;
-import com.momo.steps.cache.WeeklyIStep;
 import com.momo.steps.constant.StatisticType;
 import com.momo.steps.event.StepEventSender;
 import com.momo.steps.event.StepMessage;
@@ -24,17 +23,16 @@ public class StepServiceImpl implements StepService {
 
 	@Override
 	public void addSteps(String username, int steps) {
-		// TODO: return the accumulated steps of the day and send it to kafka
-		stepCache.addSteps(username, steps);
+		int totalSteps = stepCache.addSteps(username, steps);
 		long timestamp = System.currentTimeMillis();
-		StepMessage stepMessage = new StepMessage(username, steps, timestamp);
+		StepMessage stepMessage = new StepMessage(username, totalSteps, timestamp);
 		stepEventSender.sendEvent(stepMessage);
 	}
 
 	@Override
 	public StepResponse getThisDaySteps(String username) {
 		LocalDate today = LocalDate.now();
-		DailyIStep todaySteps = this.stepCache.getDailySteps(username, today);
+		IStep todaySteps = this.stepCache.getDailySteps(username, today);
 		return new StepResponse(username, todaySteps.totalSteps(), todaySteps.lastUpdated(), today, StatisticType.DAILY);
 	}
 
@@ -42,14 +40,14 @@ public class StepServiceImpl implements StepService {
 	@Override
 	public StepResponse getThisWeekSteps(String username) {
 		LocalDate today = LocalDate.now();
-		WeeklyIStep thisWeekSteps = this.stepCache.getWeeklySteps(username, today);
-		return new StepResponse(username, thisWeekSteps.totalSteps(), thisWeekSteps.lastUpdated(), thisWeekSteps.weekStartDate(), StatisticType.WEEKLY);
+		IStep thisWeekSteps = this.stepCache.getWeeklySteps(username, today);
+		return new StepResponse(username, thisWeekSteps.totalSteps(), thisWeekSteps.lastUpdated(), thisWeekSteps.date(), StatisticType.WEEKLY);
 	}
 
 	@Override
 	public StepResponse getThisMonthSteps(String username) {
 		LocalDate today = LocalDate.now();
-		MonthlyIStep thisMonthSteps = this.stepCache.getMonthlySteps(username, today);
-		return new StepResponse(username, thisMonthSteps.totalSteps(), thisMonthSteps.lastUpdated(), thisMonthSteps.monthStartDate(), StatisticType.MONTHLY);
+		IStep thisMonthSteps = this.stepCache.getMonthlySteps(username, today);
+		return new StepResponse(username, thisMonthSteps.totalSteps(), thisMonthSteps.lastUpdated(), thisMonthSteps.date(), StatisticType.MONTHLY);
 	}
 }

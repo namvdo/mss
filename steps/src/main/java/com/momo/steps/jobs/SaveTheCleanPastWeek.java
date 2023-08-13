@@ -2,12 +2,13 @@ package com.momo.steps.jobs;
 
 import com.momo.steps.StepUtils;
 import com.momo.steps.cache.DateKey;
-import com.momo.steps.cache.WeeklyIStep;
+import com.momo.steps.cache.Step;
 import com.momo.steps.document.MonthlyStepDocument;
 import com.momo.steps.repository.MonthlyStepRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RMapCache;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -15,12 +16,20 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.TreeSet;
 
-@AllArgsConstructor
 @Component
 @Slf4j
 public class SaveTheCleanPastWeek implements SaveThenClean {
-	private final RMapCache<DateKey, RMapCache<String, WeeklyIStep>> dateToWeeklyStepCache;
+	private final RMapCache<DateKey, RMapCache<String, Step>> dateToWeeklyStepCache;
 	private final MonthlyStepRepository monthlyStepRepository;
+
+	public SaveTheCleanPastWeek(
+			@Qualifier("weekly")
+			RMapCache<DateKey, RMapCache<String, Step>> dateToWeeklyStepCache,
+			MonthlyStepRepository monthlyStepRepository) {
+		this.dateToWeeklyStepCache = dateToWeeklyStepCache;
+		this.monthlyStepRepository = monthlyStepRepository;
+	}
+
 	@Override
 	@Scheduled(cron = "0 15 0 ? * MON") // 12:15 AM every Monday
 	public void saveThenClean() {
@@ -35,7 +44,7 @@ public class SaveTheCleanPastWeek implements SaveThenClean {
 
 
 	private void updateMonthlySteps(DateKey dateKey) {
-		RMapCache<String, WeeklyIStep> weeklyCache = dateToWeeklyStepCache.get(dateKey);
+		RMapCache<String, Step> weeklyCache = dateToWeeklyStepCache.get(dateKey);
 		LocalDate previousWsd = dateKey.date();
 		for(final var e : weeklyCache.entrySet()) {
 			int steps = e.getValue().totalSteps();
