@@ -1,4 +1,4 @@
-package com.momo.leaderboard.config;
+package com.momo.leaderboard.listener;
 
 import com.momo.leaderboard.response.Leaderboard;
 

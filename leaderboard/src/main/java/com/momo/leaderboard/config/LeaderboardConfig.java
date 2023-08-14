@@ -1,9 +1,9 @@
 package com.momo.leaderboard.config;
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.momo.leaderboard.listener.LeaderboardListener;
+import com.momo.leaderboard.listener.LeaderboardListenerImpl;
 import com.momo.leaderboard.response.StepItem;
 import lombok.AllArgsConstructor;
-import org.redisson.api.RMap;
 import org.redisson.api.RPriorityQueue;
 import org.redisson.api.RedissonClient;
 import org.springframework.context.annotation.Bean;

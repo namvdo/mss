@@ -1,6 +1,6 @@
 package com.momo.leaderboard.scorer;
 
-import com.momo.leaderboard.config.LeaderboardListener;
+import com.momo.leaderboard.listener.LeaderboardListener;
 import com.momo.leaderboard.response.Leaderboard;
 import com.momo.leaderboard.response.StepItem;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RPriorityQueue;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
