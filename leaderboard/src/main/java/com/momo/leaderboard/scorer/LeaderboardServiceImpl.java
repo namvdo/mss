@@ -9,10 +9,7 @@ import org.redisson.api.RPriorityQueue;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -50,7 +47,11 @@ public class LeaderboardServiceImpl implements LeaderboardService {
 
 
 	private void removeBy(String username) {
-		queue.removeIf(stepItem -> stepItem.getUsername().equals(username));
+		for(final StepItem step : queue) {
+			if (step.getUsername().equals(username)) {
+				queue.remove(step);
+			}
+		}
 	}
 
 	private void notifyListeners() {
@@ -65,8 +66,8 @@ public class LeaderboardServiceImpl implements LeaderboardService {
 	private Leaderboard getLeaderboard(int size) {
 		List<StepItem> items = new ArrayList<>(queue);
 		items = items.subList(0, Math.min(size, items.size()));
-		LocalDateTime now = LocalDateTime.now();
-		return new Leaderboard(items, items.size(), now);
+		Date date = new Date();
+		return new Leaderboard(items, items.size(), date);
 	}
 
 

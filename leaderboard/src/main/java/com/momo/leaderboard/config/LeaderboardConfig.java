@@ -1,5 +1,6 @@
 package com.momo.leaderboard.config;
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.momo.leaderboard.response.StepItem;
 import lombok.AllArgsConstructor;
 import org.redisson.api.RMap;
@@ -29,4 +30,5 @@ public class LeaderboardConfig {
 				new LeaderboardListenerImpl(simpMessagingTemplate)
 		);
 	}
+
 }

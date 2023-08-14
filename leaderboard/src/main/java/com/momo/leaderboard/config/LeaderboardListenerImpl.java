@@ -1,5 +1,6 @@
 package com.momo.leaderboard.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.momo.leaderboard.response.Leaderboard;
@@ -17,10 +18,16 @@ public class LeaderboardListenerImpl implements LeaderboardListener {
 	private static final Gson gson = new Gson();
 	private final SimpMessagingTemplate simpMessagingTemplate;
 
+	private final ObjectMapper objectMapper = new ObjectMapper();
+
 	@Override
 	public void onLeaderboardChanged(Leaderboard leaderboard) {
-		Preconditions.checkNotNull(leaderboard);
-		String json = gson.toJson(leaderboard);
-		simpMessagingTemplate.convertAndSend(WS_LEADERBOARD_ENDPOINT, json);
+		try {
+			Preconditions.checkNotNull(leaderboard);
+			String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(leaderboard);
+			simpMessagingTemplate.convertAndSend(WS_LEADERBOARD_ENDPOINT, json);
+		} catch (Exception e) {
+			log.warn("Failed to convert and send leaderboard: {}", e.getMessage(), e);
+		}
 	}
 }

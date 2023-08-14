@@ -12,7 +12,8 @@
     "react-scripts": "5.0.1",
     "sockjs-client": "^1.6.1",
     "stomp-websocket": "^2.3.4-next",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "ws": "^8.13.0"
   },
   "scripts": {
     "start": "react-scripts start",
