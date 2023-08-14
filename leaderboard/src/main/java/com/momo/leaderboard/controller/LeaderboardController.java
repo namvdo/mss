@@ -17,8 +17,9 @@ public class LeaderboardController {
 	private final LeaderboardService leaderboardService;
 	@GetMapping(value = "/daily")
 	@CrossOrigin(origins = "http://localhost:3000")
-	public Response<Leaderboard> get(@RequestParam("top") int top) {
+	public Response<Leaderboard> get(@RequestParam("top") Integer top) {
 		try {
+			top = top == null ? 100 : top;
 			Leaderboard leaderBoard = leaderboardService.getLeaderBoard(top);
 			return new Response<>(OK, leaderBoard, "");
 		} catch (Exception e) {
