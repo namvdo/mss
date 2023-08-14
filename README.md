@@ -1,4 +1,4 @@
-![MSS architecture](https://ibb.co/p4fRrbm)
+![MSS architecture](https://i.ibb.co/vL3QvVt/mss-arch.png)
 ### Dependencies:
 * Java 17
 * Spring Boot 3.1.2
