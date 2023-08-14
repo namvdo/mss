@@ -1,9 +1,7 @@
 package com.momo.leaderboard.config;
 
-import com.momo.leaderboard.response.LeaderboardResponse;
-import com.momo.leaderboard.response.StepItem;
-import org.redisson.api.RPriorityQueue;
+import com.momo.leaderboard.response.Leaderboard;
 
 public interface LeaderboardListener {
-	void onLeaderboardChanged(LeaderboardResponse leaderboard);
+	void onLeaderboardChanged(Leaderboard leaderboard);
 }

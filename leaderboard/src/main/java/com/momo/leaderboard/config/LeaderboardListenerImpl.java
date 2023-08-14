@@ -2,7 +2,7 @@ package com.momo.leaderboard.config;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
-import com.momo.leaderboard.response.LeaderboardResponse;
+import com.momo.leaderboard.response.Leaderboard;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -18,9 +18,8 @@ public class LeaderboardListenerImpl implements LeaderboardListener {
 	private final SimpMessagingTemplate simpMessagingTemplate;
 
 	@Override
-	public void onLeaderboardChanged(LeaderboardResponse leaderboard) {
+	public void onLeaderboardChanged(Leaderboard leaderboard) {
 		Preconditions.checkNotNull(leaderboard);
-		log.info("Leaderboard has changed, new leaderboard: {}", leaderboard);
 		String json = gson.toJson(leaderboard);
 		simpMessagingTemplate.convertAndSend(WS_LEADERBOARD_ENDPOINT, json);
 	}

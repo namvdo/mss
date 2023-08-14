@@ -23,8 +23,7 @@ public class SaveDailyStepTask {
 		this.dailyStepRepository = dailyStepRepository;
 	}
 
-//	@Scheduled(cron = "0 0 * * * *") // run every hour at the start of the hour
-	@Scheduled(cron = "0 * * * * *") // run in every minute
+	@Scheduled(cron = "0 0 * * * *") // run every hour at the start of the hour
 	public void saveDailySteps() {
 		long start = System.currentTimeMillis();
 		DateKey ofToday = DateKey.ofToday();

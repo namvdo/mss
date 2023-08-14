@@ -5,7 +5,7 @@ import com.momo.steps.cache.StepCache;
 import com.momo.steps.constant.StatisticType;
 import com.momo.steps.event.StepEventSender;
 import com.momo.steps.event.StepMessage;
-import com.momo.steps.response.StepResponse;
+import com.momo.steps.response.Step;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,24 +29,24 @@ public class StepServiceImpl implements StepService {
 	}
 
 	@Override
-	public StepResponse getThisDaySteps(String username) {
+	public Step getThisDaySteps(String username) {
 		LocalDate today = LocalDate.now();
 		IStep todaySteps = this.stepCache.getDailySteps(username, today);
-		return new StepResponse(username, todaySteps.totalSteps(), todaySteps.lastUpdated(), today, StatisticType.DAILY);
+		return new Step(username, todaySteps.totalSteps(), todaySteps.lastUpdated(), today, StatisticType.DAILY);
 	}
 
 
 	@Override
-	public StepResponse getThisWeekSteps(String username) {
+	public Step getThisWeekSteps(String username) {
 		LocalDate today = LocalDate.now();
 		IStep thisWeekSteps = this.stepCache.getWeeklySteps(username, today);
-		return new StepResponse(username, thisWeekSteps.totalSteps(), thisWeekSteps.lastUpdated(), thisWeekSteps.date(), StatisticType.WEEKLY);
+		return new Step(username, thisWeekSteps.totalSteps(), thisWeekSteps.lastUpdated(), thisWeekSteps.date(), StatisticType.WEEKLY);
 	}
 
 	@Override
-	public StepResponse getThisMonthSteps(String username) {
+	public Step getThisMonthSteps(String username) {
 		LocalDate today = LocalDate.now();
 		IStep thisMonthSteps = this.stepCache.getMonthlySteps(username, today);
-		return new StepResponse(username, thisMonthSteps.totalSteps(), thisMonthSteps.lastUpdated(), thisMonthSteps.date(), StatisticType.MONTHLY);
+		return new Step(username, thisMonthSteps.totalSteps(), thisMonthSteps.lastUpdated(), thisMonthSteps.date(), StatisticType.MONTHLY);
 	}
 }
