@@ -32,14 +32,14 @@ public class WeeklyStepRepository extends AbstractStepRepository<WeeklyStepDocum
 	public List<WeeklyStepDocument> get(LocalDate date) {
 		LocalDate weekStartDate = StepUtils.getWeekStartDate(date);
 		Query query = new Query(Criteria.where("weekStartDate").is(weekStartDate));
-		return mongoTemplate.find(query, WeeklyStepDocument.class, WEEKLY_COLLECTION);
+		return mongoTemplate.find(query, WeeklyStepDocument.class, getCollectionName());
 	}
 
 	@Override
 	public WeeklyStepDocument get(String username, LocalDate date) {
 		LocalDate weekStartDate = StepUtils.getWeekStartDate(date);
 		Query query = new Query(Criteria.where("username").is(username).and("weekStartDate").is(weekStartDate));
-		return mongoTemplate.findOne(query, WeeklyStepDocument.class, WEEKLY_COLLECTION);
+		return mongoTemplate.findOne(query, WeeklyStepDocument.class, getCollectionName());
 	}
 
 	@Override

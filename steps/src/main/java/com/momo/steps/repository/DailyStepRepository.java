@@ -28,13 +28,13 @@ public class DailyStepRepository extends AbstractStepRepository<DailyStepDocumen
 	@Override
 	public List<DailyStepDocument> get(LocalDate date) {
 		Query query = new Query(Criteria.where("date").is(date));
-		return mongoTemplate.find(query, DailyStepDocument.class, DAILY_COLLECTION);
+		return mongoTemplate.find(query, DailyStepDocument.class, getCollectionName());
 	}
 
 	@Override
 	public DailyStepDocument get(String username, LocalDate date) {
 		Query query = new Query(Criteria.where("username").is(username).and("date").is(date));
-		return mongoTemplate.findOne(query, DailyStepDocument.class, DAILY_COLLECTION);
+		return mongoTemplate.findOne(query, DailyStepDocument.class, getCollectionName());
 	}
 
 	@Override

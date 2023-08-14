@@ -29,14 +29,14 @@ public class MonthlyStepRepository extends AbstractStepRepository<MonthlyStepDoc
 	public List<MonthlyStepDocument> get(LocalDate date) {
 		LocalDate msd = StepUtils.getMonthStartDate(date);
 		Query query = new Query(Criteria.where("monthStartDate").is(msd));
-		return mongoTemplate.find(query, MonthlyStepDocument.class, MONTHLY_COLLECTION);
+		return mongoTemplate.find(query, MonthlyStepDocument.class, getCollectionName());
 	}
 
 	@Override
 	public MonthlyStepDocument get(String username, LocalDate date) {
 		LocalDate msd = StepUtils.getMonthStartDate(date);
 		Query query = new Query(Criteria.where("username").is(username).and("monthStartDate").is(msd));
-		return mongoTemplate.findOne(query, MonthlyStepDocument.class, MONTHLY_COLLECTION);
+		return mongoTemplate.findOne(query, MonthlyStepDocument.class, getCollectionName());
 	}
 
 	@Override
