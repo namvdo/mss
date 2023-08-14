@@ -6,12 +6,13 @@ public interface StepService {
 
 	/**
 	 * Add steps to the current day for a given user. Update the total number of steps
-	 * if there already exists steps with the given user for the current day.
+	 * if there already exists steps with the given user for the current day. Returns the
+	 * total number of accumulated steps.
 	 *
 	 * @param username user to add more steps
 	 * @param steps number of steps to add
 	 */
-	void addSteps(String username, int steps);
+	Step addSteps(String username, int steps);
 
 	/**
 	 * Get total number of accumulated steps for a given user for the current day.

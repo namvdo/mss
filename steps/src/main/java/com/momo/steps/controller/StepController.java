@@ -37,14 +37,11 @@ public class StepController {
 	}
 
 	@PostMapping("/daily/add")
-	public void addSteps(@RequestBody StepRequest stepRequest) {
+	public Response<Step> addSteps(@RequestBody StepRequest stepRequest) {
 		Preconditions.checkNotNull(stepRequest);
-		stepService.addSteps(
-				stepRequest.username(),
-				stepRequest.steps()
-		);
 		LocalDate date = stepRequest.date() == null ? LocalDate.now() : stepRequest.date();
 		log.info("Adding: {} steps for user: {}, date: {}", stepRequest.steps, stepRequest.username, date);
+		return getResponse(e -> this.stepService.addSteps(e.username, e.steps), stepRequest);
 	}
 
 	private <E, T> Response<T> getResponse(Function<E, T> function, E param) {

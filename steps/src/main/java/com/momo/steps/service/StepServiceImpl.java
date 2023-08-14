@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 @Slf4j
@@ -21,11 +22,12 @@ public class StepServiceImpl implements StepService {
 
 
 	@Override
-	public void addSteps(String username, int steps) {
+	public Step addSteps(String username, int steps) {
 		int totalSteps = stepCache.addSteps(username, steps);
 		long timestamp = System.currentTimeMillis();
 		StepMessage stepMessage = new StepMessage(username, totalSteps, timestamp);
 		stepEventSender.sendEvent(stepMessage);
+		return new Step(username, totalSteps, LocalDateTime.now(), LocalDate.now(), StatisticType.DAILY);
 	}
 
 	@Override
