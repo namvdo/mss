@@ -5,10 +5,7 @@ import com.momo.leaderboard.response.Response;
 import com.momo.leaderboard.scorer.LeaderboardService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/api/v1/leaderboard")
 @RestController
@@ -19,6 +16,7 @@ public class LeaderboardController {
 	public static final String FAIL = "fail";
 	private final LeaderboardService leaderboardService;
 	@GetMapping(value = "/daily")
+	@CrossOrigin(origins = "http://localhost:3000")
 	public Response<Leaderboard> get(@RequestParam("top") int top) {
 		try {
 			Leaderboard leaderBoard = leaderboardService.getLeaderBoard(top);

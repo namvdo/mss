@@ -1,0 +1,41 @@
+/* Leaderboard Container */
+.leaderboard-container {
+    text-align: center;
+    margin: 20px;
+}
+
+/* Leaderboard Table */
+.leaderboard-table {
+    width: 80%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+}
+
+/* Leaderboard Row */
+.leaderboard-row {
+    background-color: #f2f2f2;
+}
+
+/* Leaderboard Cell */
+.leaderboard-cell {
+    padding: 10px;
+    text-align: center;
+}
+
+/* Header Cell */
+.leaderboard-table th {
+    background-color: #333;
+    color: white;
+    padding: 10px;
+}
+
+/* Odd Rows */
+.leaderboard-table tbody tr:nth-child(odd) {
+    background-color: #f2f2f2;
+}
+
+/* Even Rows */
+.leaderboard-table tbody tr:nth-child(even) {
+    background-color: #fff;
+}

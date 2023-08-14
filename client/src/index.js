@@ -3,21 +3,10 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-const client = new Client({
-  brokerURL: 'ws://localhost:8081/ws',
-  onConnect: () => {
-    client.subscribe('/topic/leaderboard', message =>
-      console.log(`Received: ${message.body}`)
-    );
-  },
-});
 
-client.activate();
 
 root.render(
   <React.StrictMode>
